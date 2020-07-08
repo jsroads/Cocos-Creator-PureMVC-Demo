@@ -735,7 +735,7 @@ puremvc框架 初始化完毕
 
 ![image-20200708153926746](README/image-20200708153926746.png)
 
-解决办法：最后经查找删除 pure代码中 __extends 的定义即可
+解决办法：最后经查找删除  puremvc.js代码中 __extends 的定义即可
 
 ![image-20200708154114548](README/image-20200708154114548.png)
 
