@@ -37,6 +37,12 @@ TYpescript 多核版地址:  https://github.com/PureMVC/puremvc-typescript-multi
 - test: 官方给了一个web 版本的 测试demo
 - 其他说明信息配置
 
+#### 环境
+
+- Mac 系统
+- Cocos Creator 2.4.0
+- PureMVC Typescript 标准版
+
 先说说如何使用吧。
 
 ### 配置步骤
