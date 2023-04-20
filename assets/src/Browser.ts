@@ -4,8 +4,8 @@
  */
 import {director, Size, sys, view} from "cc";
 
-const MINI_GAMES_LIST = [sys.WECHAT_GAME, sys.BYTEDANCE_MINI_GAME,
-    sys.VIVO_MINI_GAME, sys.OPPO_MINI_GAME, sys.BAIDU_MINI_GAME];
+const MINI_GAMES_LIST = [sys.Platform.WECHAT_GAME, sys.Platform.BYTEDANCE_MINI_GAME,
+    sys.Platform.VIVO_MINI_GAME, sys.Platform.OPPO_MINI_GAME, sys.Platform.BAIDU_MINI_GAME];
 export default class Browser {
     //本地时间和服务器时间间隔
     public static timeInterval: number = 0;
@@ -26,7 +26,7 @@ export default class Browser {
      * 目前没有找到 代替 cc.winSize 先这样设置 后面统一修改
      */
     public static get winSize(): Size {
-        return director.getWinSize()
+        return view.getVisibleSize()
     }
 
     public static get designWidth(): number {
@@ -55,10 +55,10 @@ export default class Browser {
             console.log("本地平台");
             if (sys.isMobile) {
                 console.log("本地移动平台");
-                if (sys.os == sys.OS_ANDROID) {
+                if (sys.platform == sys.Platform.ANDROID) {
                     console.log("本地Android平台");
                     Browser.onAndroid = true;
-                } else if (sys.os == sys.OS_IOS) {
+                } else if (sys.platform == sys.Platform.IOS) {
                     console.log("本地ios平台");
                     Browser.onIOS = true;
                 }

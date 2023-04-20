@@ -1,6 +1,7 @@
 {
-  "name": "Cocos-Creator-PureMVC-Demo",
-  "type": "3d",
-  "uuid": "fdcd3127-d520-4d83-bdc0-598250d36bcc",
-  "version": "3.0.1"
+  "name": "Cocos-Creator-PureMVC3",
+  "uuid": "1d383f13-1e70-4f8e-879a-3e16df1d4dc8",
+  "creator": {
+    "version": "3.7.2"
+  }
 }

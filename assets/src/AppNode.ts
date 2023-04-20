@@ -27,7 +27,7 @@
  *                              代码无BUG!
  */
 
-import {_decorator, Component, game, macro, Node, SystemEvent, systemEvent} from "cc";
+import {_decorator, Component, game, Node, input, Input, KeyCode} from "cc";
 import {AppFacade} from "./core/AppFacade";
 import {IMediator, IProxy} from "../lib/puremvc";
 import Browser from "./Browser";
@@ -75,7 +75,7 @@ export default class AppNode extends Component {
         if (!AppFacade.getInstance().hasMediator(name)) {
             console.error(`Mediator ${name} 未注册`);
         }
-        console.log("取消注册", JSON.stringify(name));
+        console.trace("取消注册", JSON.stringify(name));
         return AppFacade.getInstance().removeMediator(name);
     }
 
@@ -97,9 +97,9 @@ export default class AppNode extends Component {
     protected async start() {
         if (Browser.onAndroid) {
             console.log("Android添加监听返回键")
-            systemEvent.on(SystemEvent.EventType.KEY_DOWN, (event) => {
+            input.on(Input.EventType.KEY_DOWN, (event) => {
                 switch (event.keyCode) {
-                    case macro.KEY.back:
+                    case KeyCode.MOBILE_BACK:
                         game.end();
                         break;
                     default:

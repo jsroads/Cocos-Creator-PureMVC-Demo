@@ -1,7 +1,6 @@
-import {_decorator, js} from 'cc';
+import {js} from 'cc';
 import BaseView from "./BaseView";
 
-const {ccclass, property} = _decorator;
 export class BaseScene extends BaseView {
     protected onLoad() {
         const className = js.getClassName(this);

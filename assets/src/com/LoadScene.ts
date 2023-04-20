@@ -2,7 +2,7 @@
  * Created by jsroads on 2021/4/26.8:35 下午
  * Note:
  */
-import {_decorator, director, EventTouch, SceneAsset} from 'cc';
+import {_decorator, director, EventTouch, SceneAsset, Scene} from 'cc';
 import {BaseScene} from "../base/BaseScene";
 
 const {ccclass, property} = _decorator;
@@ -16,7 +16,7 @@ export class LoadScene extends BaseScene {
     protected start() {
         console.log("首个场景初始化完毕")
         this.node.emit("init_game", "OK");
-        director.preloadScene("main", (completedCount: number, totalCount: number, item: any) => {
+        director.preloadScene("game", (completedCount: number, totalCount: number, item: any) => {
         }, (error: null | Error, sceneAsset?: SceneAsset) => {
             console.log(" main场景预加载完毕");
         });
@@ -27,8 +27,9 @@ export class LoadScene extends BaseScene {
     }
 
     public loadMainScene(){
-        director.loadScene("main", (res) => {
-            console.log("load 转场 进入场景 main");
+        director.loadScene("game", (error: null | Error, scene?: Scene) => {
+            console.log("load 转场 进入场景 game");
+            // director.runScene(scene)
         });
     }
     protected onDestroy() {

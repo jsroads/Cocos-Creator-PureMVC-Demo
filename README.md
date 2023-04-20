@@ -1,7 +1,9 @@
 # PureMVC 如何在Cocos Creator里面使用
 ## 注意
 
-- **master 分支为 Cocos Creator 3.0 （3.0.1）版本**
+- **master 分支为 Cocos Creator 3.7.2 （3.7.2）版本**   **2023年4月21更新**
+
+- **3.0.1分支为 Cocos Creator 3.0 （3.0.1）版本**
 
 - **2.4.0 分支为 Cocos Creator 2.4（2.4.0）版本**
 
@@ -44,6 +46,18 @@
 项目研发中，一般来说方法使命唯一，或者说职责唯一，本来PureMVC 的view可以主动控制UI层的，但是[Cocos Creator](https://www.cocos.com/docs)是节点树的渲染方式控制节点和节点上组件的生命周期（`onLoad`，`onEnable`，`start`，update，`lateUpdate`，`onDisable`，`onDestroy`），基于引擎已经提供的这些，结合`Mediator` 和`Node`进行绑定，让一个功能的模块（这里模块是指功能相对独立，需要和外部其他Node或者预置体通信）
 
 ## 实现
+
+### 3.7.2效果如下：
+
+![1234](README/1234.gif)
+
+
+
+日志输出如下
+
+![image-20230421030747095](README/image-20230421030747095.png)
+
+
 
 ### 效果如下
 
