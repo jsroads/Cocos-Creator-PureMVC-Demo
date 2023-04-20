@@ -26,10 +26,10 @@
  *                               神兽保佑
  *                              代码无BUG!
  */
-import IMediator = puremvc.IMediator;
-import IProxy = puremvc.IProxy;
+
 import Browser from "./channel/Browser";
 import {AppFacade} from "./core/AppFacade";
+import {IProxy,IMediator} from "../lib/puremvc";
 
 const {ccclass,disallowMultiple, menu,executionOrder} = cc._decorator;
 @ccclass

@@ -2,10 +2,10 @@
  * Created by jsroads on 2020/6/11.2:40 下午
  * Note:
  */
-import MacroCommand = puremvc.MacroCommand;
 import ControllerCommand from "./ControllerCommand";
 import ModelPrepCommand from "./ModelPrepCommand";
 import ViewPrepCommand from "./ViewPrepCommand";
+import {MacroCommand} from "../../lib/puremvc";
 
 export default class StartupCommand extends MacroCommand {
     constructor() {

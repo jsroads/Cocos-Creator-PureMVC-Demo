@@ -1,5 +1,6 @@
-import Mediator = puremvc.Mediator;
+
 import {cccExtensionClass} from "../../lib/ccc";
+import { Mediator } from "../../lib/puremvc";
 /**
  * Created by jsroads on 2020/6/18. 6:08 下午
  * Note:抽象类

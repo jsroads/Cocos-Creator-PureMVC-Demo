@@ -5,6 +5,7 @@
 import {NotificationConst} from "./NotificationConst";
 import BaseMediator from "./BaseMediator";
 import {cccExtensionClass} from "../../lib/ccc";
+import { INotification } from "../../lib/puremvc";
 @cccExtensionClass
 export default class AppMediator extends BaseMediator {
     constructor(viewComponent?: any) {
@@ -33,7 +34,7 @@ export default class AppMediator extends BaseMediator {
         ];
     }
 
-    public handleNotification(notification: puremvc.INotification): void {
+    public handleNotification(notification: INotification): void {
         switch (notification.getName()) {
             case NotificationConst.SHOW_LOADING:
                 this.lazyEventListener();

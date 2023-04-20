@@ -12,6 +12,12 @@
 
 
 
+### 分支 2.4.11  为原来的  Cocos Creator 2.4.11 版本 
+
+注:此分支采用ES6 类的方式开发 不再使用 插件方式 更新时间 2023年 4月21日
+
+
+
 ![image-20200708141828268](README/image-20200708141828268.png)
 
 这次主要聊聊在Cocos Creator 这样的ECS(实体组件)系统里如何和PureMVC结合使用，之前我也写过如何在Layabox里面用PureMVC框架。一年后的今天，再次谈谈如何在Cocos Creator中用这个框架

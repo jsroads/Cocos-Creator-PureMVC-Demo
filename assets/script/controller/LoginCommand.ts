@@ -3,13 +3,13 @@
  * Note:
  */
 import LoginProxy from "../model/proxy/LoginProxy";
-import SimpleCommand = puremvc.SimpleCommand;
+import {INotification, SimpleCommand} from "../../lib/puremvc";
 
 export default class LoginCommand extends SimpleCommand {
     constructor() {
         super();
     }
-    public execute(notification: puremvc.INotification): void {
+    public execute(notification: INotification): void {
         let proxy: LoginProxy = <LoginProxy>this.facade.retrieveProxy(LoginProxy.NAME);
         proxy.login(notification.getBody());
     }

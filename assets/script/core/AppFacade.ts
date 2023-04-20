@@ -22,10 +22,10 @@
  *                        神兽保佑
  *                       代码无BUG!
  */
-import Facade = puremvc.Facade;
-import IFacade = puremvc.IFacade;
+
 import {NotificationConst} from "./NotificationConst";
 import StartupCommand from "./StartupCommand";
+import {Facade, IFacade} from "../../lib/puremvc";
 
 /**
  * ApplicationFacade 类对象负责初始化Controller（控制器），建立Command与Notification 名之间的映射；

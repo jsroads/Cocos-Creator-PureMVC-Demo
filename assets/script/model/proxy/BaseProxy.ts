@@ -2,9 +2,8 @@
  * Created by jsroads on 2020/6/11.2:51 下午
  * Note:
  */
-import Proxy = puremvc.Proxy;
-import IProxy = puremvc.IProxy;
 import {cccExtensionClass} from "../../../lib/ccc";
+import { IProxy,Proxy } from "../../../lib/puremvc";
 import {Handler} from "../../utils/Handler";
 @cccExtensionClass
 export default abstract class BaseProxy extends Proxy implements IProxy {
