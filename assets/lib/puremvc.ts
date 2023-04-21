@@ -1,3 +1,54 @@
+
+/**
+ * A base <code>INotifier</code> implementation.
+ *
+ * <code>MacroCommand</code>, <code>SimpleCommand</code>, <code>Mediator</code> and
+ * <code>Proxy</code> all have a need to send <code>Notifications</code>.
+ *
+ * The <code>INotifier</code> interface provides a common method called
+ * <code>sendNotification</code> that relieves implementation code of the necessity to actually
+ * construct <code>Notification</code>s.
+ *
+ * The <code>INotifier</code> interface, which all of the above mentioned classes extend,
+ * provides an initialized reference to the <code>Facade</code> singleton, which is required by
+ * the convenience method <code>sendNotification</code>    for sending <code>Notifications</code>,
+ * but it also eases implementation as these classes have frequent <code>Facade</code>
+ * interactions and usually require access to the facade anyway.
+ */
+export class Notifier implements INotifier {
+    /**
+     * Local reference to the singleton <code>Facade</code>.
+     *
+     * @protected
+     */
+    facade: IFacade = null!;
+
+    /**
+     * Constructs a <code>Notifier</code> instance.
+     */
+    constructor() {
+        this.facade = Facade.getInstance();
+    }
+
+    /**
+     * Create and send a <code>Notification</code>.
+     *
+     * Keeps us from having to construct new <code>Notification</code> instances in our
+     * implementation code.
+     *
+     * @param name
+     *        The name of the notification to send.
+     *
+     * @param body
+     *        The body of the notification.
+     *
+     * @param type
+     *        The type of the notification.
+     */
+    sendNotification(name: string, body: any = null, type?: string): void {
+        this.facade.sendNotification(name, body, type);
+    }
+}
 /**
  * The <code>Controller</code> class for PureMVC.
  *
@@ -23,18 +74,31 @@
  */
 export class Controller implements IController {
     /**
+     * Singleton instance local reference.
+     *
+     * @protected
+     */
+    static instance: IController;
+    /**
+     * Error message used to indicate that a controller singleton is already constructed when
+     * trying to constructs the class twice.
+     *
+     * @protected
+     * @constant
+     */
+    static SINGLETON_MSG: string = "Controller singleton already constructed!";
+    /**
      * Local reference to the <code>View</code> singleton.
      *
      * @protected
      */
     view: IView = null!;
-
     /**
      * Mapping of <code>Notification<code> names to <code>Command</code> constructors references.
      *
      * @protected
      */
-    commandMap: any = null!;
+    commandMap: Record<string, any> = null!;
 
     /**
      /**
@@ -54,6 +118,19 @@ export class Controller implements IController {
         Controller.instance = this;
         this.commandMap = {};
         this.initializeController();
+    }
+
+    /**
+     * <code>Controller</code> singleton Factory method.
+     *
+     * @return
+     *        The singleton instance of <code>Controller</code>
+     */
+    static getInstance(): IController {
+        if (!Controller.instance)
+            Controller.instance = new Controller();
+
+        return Controller.instance;
     }
 
     /**
@@ -92,9 +169,9 @@ export class Controller implements IController {
          * because today the compiler consider that <code>Function</code> is not newable and
          * doesn't have a <code>Class</code> type)
          */
-        let commandClassRef: any = this.commandMap[notification.getName()];
+        const commandClassRef: any = this.commandMap[notification.getName()];
         if (commandClassRef) {
-            let command: ICommand = <ICommand> /*</>*/ new commandClassRef();
+            const command: ICommand = <ICommand> /*</>*/ new commandClassRef();
             command.execute(notification);
         }
 
@@ -118,7 +195,7 @@ export class Controller implements IController {
      * @param commandClassRef
      *        The constructor of the <code>ICommand</code>.
      */
-    registerCommand(notificationName: string, commandClassRef: Function): void {
+    registerCommand<T extends SimpleCommand>(notificationName: string, commandClassRef:  new () => T): void {
         if (!this.commandMap[notificationName])
             this.view.registerObserver(notificationName, new Observer(this.executeCommand, this));
 
@@ -155,37 +232,7 @@ export class Controller implements IController {
             delete this.commandMap[notificationName];
         }
     }
-
-    /**
-     * Singleton instance local reference.
-     *
-     * @protected
-     */
-    static instance: IController;
-
-    /**
-     * Error message used to indicate that a controller singleton is already constructed when
-     * trying to constructs the class twice.
-     *
-     * @protected
-     * @constant
-     */
-    static SINGLETON_MSG: string = "Controller singleton already constructed!";
-
-    /**
-     * <code>Controller</code> singleton Factory method.
-     *
-     * @return
-     *        The singleton instance of <code>Controller</code>
-     */
-    static getInstance(): IController {
-        if (!Controller.instance)
-            Controller.instance = new Controller();
-
-        return Controller.instance;
-    }
 }
-
 /**
  * The <code>Model</code> class for PureMVC.
  *
@@ -203,13 +250,28 @@ export class Controller implements IController {
  * Typically, you use an <code>ICommand</code> to create and register <code>Proxy</code> instances
  * once the <code>Facade</code> has initialized the Core actors.
  */
-export class Model implements IModel {
+export class Model
+    implements IModel {
+    /**
+     * Error message used to indicate that a controller singleton is already constructed when
+     * trying to constructs the class twice.
+     *
+     * @constant
+     * @protected
+     */
+    static SINGLETON_MSG: string = "Model singleton already constructed!";
+    /**
+     * singleton instance local reference.
+     *
+     * @protected
+     */
+    static instance: IModel;
     /**
      * HashTable of <code>IProxy</code> registered with the <code>Model</code>.
      *
      * @protected
      */
-    proxyMap: any = null;
+    proxyMap: Record<string, any> = null!;
 
     /**
      * This <code>IModel</code> implementation is a singleton, so you should not call the
@@ -226,6 +288,19 @@ export class Model implements IModel {
         Model.instance = this;
         this.proxyMap = {};
         this.initializeModel();
+    }
+
+    /**
+     * <code>Model</code> singleton factory method.
+     *
+     * @return
+     *        The singleton instance of <code>Model</code>.
+     */
+    static getInstance(): IModel {
+        if (!Model.instance)
+            Model.instance = new Model();
+
+        return Model.instance;
     }
 
     /**
@@ -246,7 +321,7 @@ export class Model implements IModel {
      * @param proxy
      *        An <code>IProxy</code> to be held by the <code>Model</code>.
      */
-    registerProxy(proxy: IProxy): void {
+    registerProxy<T extends Proxy>(proxy: T): void {
         this.proxyMap[proxy.getProxyName()] = proxy;
         proxy.onRegister();
     }
@@ -261,8 +336,8 @@ export class Model implements IModel {
      *        The <code>IProxy</code> that was removed from the <code>Model</code> or an
      *        explicit <code>null</null> if the <code>IProxy</code> didn't exist.
      */
-    removeProxy(proxyName: string): IProxy {
-        let proxy: IProxy = this.proxyMap[proxyName];
+    removeProxy<T extends Proxy>(proxyName: string): T {
+        const proxy: T = this.proxyMap[proxyName];
         if (proxy) {
             delete this.proxyMap[proxyName];
             proxy.onRemove();
@@ -281,7 +356,7 @@ export class Model implements IModel {
      *        The <code>IProxy</code> instance previously registered with the given
      *        <code>proxyName</code> or an explicit <code>null</code> if it doesn't exists.
      */
-    retrieveProxy(proxyName: string): IProxy {
+    retrieveProxy<T extends Proxy>(proxyName: string): T {
         //Return a strict null when the proxy doesn't exist
         return this.proxyMap[proxyName] || null;
     }
@@ -298,37 +373,7 @@ export class Model implements IModel {
     hasProxy(proxyName: string): boolean {
         return this.proxyMap[proxyName] != null;
     }
-
-    /**
-     * Error message used to indicate that a controller singleton is already constructed when
-     * trying to constructs the class twice.
-     *
-     * @constant
-     * @protected
-     */
-    static SINGLETON_MSG: string = "Model singleton already constructed!";
-
-    /**
-     * singleton instance local reference.
-     *
-     * @protected
-     */
-    static instance: IModel;
-
-    /**
-     * <code>Model</code> singleton factory method.
-     *
-     * @return
-     *        The singleton instance of <code>Model</code>.
-     */
-    static getInstance(): IModel {
-        if (!Model.instance)
-            Model.instance = new Model();
-
-        return Model.instance;
-    }
 }
-
 /**
  * The <code>View</code> class for PureMVC.
  *
@@ -347,20 +392,31 @@ export class Model implements IModel {
  * <LI>Notifying the <code>IObserver</code>s of a given <code>INotification</code> when it
  * broadcasts.
  */
-export class View implements IView {
+export class View
+    implements IView {
+    /**
+     * @constant
+     * @protected
+     */
+    static SINGLETON_MSG: string = "View singleton already constructed!";
+    /**
+     * Singleton instance local reference.
+     *
+     * @protected
+     */
+    static instance: IView;
     /**
      * Mapping of <code>Mediator</code> names to <code>Mediator</code> instances.
      *
      * @protected
      */
-    mediatorMap: any = null;
-
+    mediatorMap: Record<string, any> = null!;
     /**
      * Mapping of <code>Notification</code> names to <code>Observers</code> lists.
      *
      * @protected
      */
-    observerMap: any = null;
+    observerMap: Record<string, IObserver[]> = null!;
 
     /**
      * This <code>IView</code> implementation is a singleton, so you should not call the
@@ -378,6 +434,19 @@ export class View implements IView {
         this.mediatorMap = {};
         this.observerMap = {};
         this.initializeView();
+    }
+
+    /**
+     * <code>View</code> singleton Factory method.
+     *
+     * @return
+     *        The singleton instance of <code>View</code>.
+     */
+    static getInstance(): IView {
+        if (!View.instance)
+            View.instance = new View();
+
+        return View.instance;
     }
 
     /**
@@ -402,13 +471,11 @@ export class View implements IView {
      *        The <code>IObserver</code> to register.
      */
     registerObserver(notificationName: string, observer: IObserver): void {
-        let observers: IObserver[] = this.observerMap[notificationName];
-        if (observers) {
+        const observers: IObserver[] = this.observerMap[notificationName];
+        if (observers)
             observers.push(observer);
-        } else {
+        else
             this.observerMap[notificationName] = [observer];
-        }
-
     }
 
     /**
@@ -424,12 +491,12 @@ export class View implements IView {
      */
     removeObserver(notificationName: string, notifyContext: any): void {
         //The observer list for the notification under inspection
-        let observers: IObserver[] = this.observerMap[notificationName];
+        const observers: IObserver[] = this.observerMap[notificationName];
 
         //Find the observer for the notifyContext.
         let i: number = observers.length;
         while (i--) {
-            let observer: IObserver = observers[i];
+            const observer: IObserver = observers[i];
             if (observer.compareNotifyContext(notifyContext)) {
                 observers.splice(i, 1);
                 break;
@@ -455,15 +522,15 @@ export class View implements IView {
      *        The <code>INotification</code> to notify <code>IObserver</code>s of.
      */
     notifyObservers(notification: INotification): void {
-        let notificationName: string = notification.getName();
+        const notificationName: string = notification.getName();
 
-        let observersRef/*Array*/ = this.observerMap[notificationName];
+        const observersRef/*Array*/ = this.observerMap[notificationName];
         if (observersRef) {
             // Copy the array.
-            let observers/*Array*/ = observersRef.slice(0);
-            let len/*Number*/ = observers.length;
+            const observers/*Array*/ = observersRef.slice(0);
+            const len/*Number*/ = observers.length;
             for (let i/*Number*/ = 0; i < len; i++) {
-                let observer/*Observer*/ = observers[i];
+                const observer/*Observer*/ = observers[i];
                 observer.notifyObserver(notification);
             }
         }
@@ -484,8 +551,9 @@ export class View implements IView {
      * @param mediator
      *        A reference to an <code>IMediator</code> implementation instance.
      */
-    registerMediator(mediator: IMediator): void {
-        let name: string = mediator.getMediatorName();
+    registerMediator<V, T extends Mediator<V>>(mediator: T): void {
+        const name: string = mediator.getMediatorName();
+
         //Do not allow re-registration (you must removeMediator first).
         if (this.mediatorMap[name])
             return;
@@ -494,11 +562,11 @@ export class View implements IView {
         this.mediatorMap[name] = mediator;
 
         //Get Notification interests, if any.
-        let interests: string[] = mediator.listNotificationInterests();
-        let len: Number = interests.length;
+        const interests: string[] = mediator.listNotificationInterests();
+        const len: number = interests.length;
         if (len > 0) {
             //Create Observer referencing this mediator's handlNotification method.
-            let observer: IObserver = new Observer(mediator.handleNotification, mediator);
+            const observer: IObserver = new Observer(mediator.handleNotification, mediator);
 
             //Register Mediator as Observer for its list of Notification interests.
             for (let i: number = 0; i < len; i++)
@@ -519,7 +587,7 @@ export class View implements IView {
      *        The <code>IMediator</code> instance previously registered with the given
      *        <code>mediatorName</code> or an explicit <code>null</code> if it doesn't exists.
      */
-    retrieveMediator(mediatorName: string): IMediator {
+    retrieveMediator<V, T extends Mediator<V>>(mediatorName: string): T {
         //Return a strict null when the mediator doesn't exist
         return this.mediatorMap[mediatorName] || null;
     }
@@ -534,13 +602,14 @@ export class View implements IView {
      *        The <code>IMediator</code> that was removed from the <code>View</code> or a
      *        strict <code>null</null> if the <code>Mediator</code> didn't exist.
      */
-    removeMediator(mediatorName: string): IMediator {
+    removeMediator<V, T extends Mediator<V>>(mediatorName: string): T {
         // Retrieve the named mediator
-        let mediator: IMediator = this.mediatorMap[mediatorName];
-        if (!mediator) return mediator;
+        const mediator: T = this.mediatorMap[mediatorName];
+        if (!mediator)
+            return null!;
 
         //Get Notification interests, if any.
-        let interests: string[] = mediator.listNotificationInterests();
+        const interests: string[] = mediator.listNotificationInterests();
 
         //For every notification this mediator is interested in...
         let i: number = interests.length;
@@ -568,38 +637,55 @@ export class View implements IView {
     hasMediator(mediatorName: string): boolean {
         return this.mediatorMap[mediatorName] != null;
     }
-
-    /**
-     * @constant
-     * @protected
-     */
-    static SINGLETON_MSG: string = "View singleton already constructed!";
-
-    /**
-     * Singleton instance local reference.
-     *
-     * @protected
-     */
-    static instance: IView;
-
-    /**
-     * <code>View</code> singleton Factory method.
-     *
-     * @return
-     *        The singleton instance of <code>View</code>.
-     */
-    static getInstance(): IView {
-        if (!View.instance)
-            View.instance = new View();
-
-        return View.instance;
-    }
-}
-
+}// export {Controller} from "./core/Controller";
+// export {Model} from "./core/Model";
+// export {View} from "./core/View";
+// export {ICommand} from "./interfaces/ICommand";
+// export {IController} from "./interfaces/IController";
+// export {IFacade} from "./interfaces/IFacade";
+// export {IMediator} from "./interfaces/IMediator";
+// export {IModel} from "./interfaces/IModel";
+// export {INotification} from "./interfaces/INotification";
+// export {INotifier} from "./interfaces/INotifier";
+// export {IObserver} from "./interfaces/IObserver";
+// export {IProxy} from "./interfaces/IProxy";
+// export {IView} from "./interfaces/IView";
+// export {MacroCommand} from "./patterns/command/MacroCommand";
+// export {SimpleCommand} from "./patterns/command/SimpleCommand";
+// export {Facade} from "./patterns/facade/Facade";
+// export {Mediator} from "./patterns/mediator/Mediator";
+// export {Notification} from "./patterns/observer/Notification";
+// export {Notifier} from "./patterns/observer/Notifier";
+// export {Observer} from "./patterns/observer/Observer";
+// export {Proxy} from "./patterns/proxy/Proxy";
+// export {
+//     Controller,
+//     Model,
+//     View,
+//     ICommand,
+//     IController,
+//     IFacade,
+//     IMediator,
+//     IModel,
+//     INotification,
+//     INotifier,
+//     IObserver,
+//     IProxy,
+//     IView,
+//     MacroCommand,
+//     SimpleCommand,
+//     Facade,
+//     Mediator,
+//     Notification,
+//     Notifier,
+//     Observer,
+//     Proxy
+// };
 /**
  * The interface definition for a PureMVC Command.
  */
-export interface ICommand extends INotifier {
+export interface ICommand
+    extends INotifier {
     /**
      * Fulfill the use-case initiated by the given <code>INotification</code>.
      *
@@ -612,7 +698,6 @@ export interface ICommand extends INotifier {
      */
     execute(notification: INotification): void;
 }
-
 /**
  * The interface definition for a PureMVC Controller.
  *
@@ -661,7 +746,7 @@ export interface IController {
      * @param commandClassRef
      *        The constructor of the <code>ICommand</code> implementor.
      */
-    registerCommand(notificationName: string, commandClassRef: Function): void;
+    registerCommand<T extends SimpleCommand>(notificationName: string, commandClassRef:  new () => T): void;
 
     /**
      * Check if an <code>ICommand</code> is registered for a given <code>Notification</code>.
@@ -686,7 +771,6 @@ export interface IController {
      */
     removeCommand(notificationName: string): void;
 }
-
 /**
  * The interface definition for a PureMVC Facade.
  *
@@ -698,7 +782,8 @@ export interface IController {
  * In PureMVC, the Facade acts as an interface between the core MVC actors (Model, View,
  * Controller) and the rest of your application.
  */
-export interface IFacade extends INotifier {
+export interface IFacade
+    extends INotifier {
     /**
      * Register an <code>ICommand</code> with the <code>IController</code> associating it to a
      * <code>INotification</code> name.
@@ -710,7 +795,7 @@ export interface IFacade extends INotifier {
      * @param commandClassRef
      *        A reference to the constructor of the <code>ICommand</code>.
      */
-    registerCommand(notificationName: string, commandClassRef: Function): void;
+    registerCommand<T extends SimpleCommand>(notificationName: string, commandClassRef: new () => T): void;
 
     /**
      * Remove a previously registered <code>ICommand</code> to <code>INotification</code>
@@ -783,7 +868,7 @@ export interface IFacade extends INotifier {
      * @param mediator
      A reference to the <code>IMediator</code>.
      */
-    registerMediator(mediator: IMediator): void;
+    registerMediator<V, T extends Mediator<V>>(mediator: T): void;
 
     /**
      * Retrieve an <code>IMediator</code> from the <code>IView</code>.
@@ -795,7 +880,7 @@ export interface IFacade extends INotifier {
      *        The <code>IMediator</code> previously registered with the given
      *        <code>mediatorName</code>.
      */
-    retrieveMediator(mediatorName: string): IMediator;
+    retrieveMediator<V, T extends Mediator<V>>(mediatorName: string): T;
 
     /**
      * Remove an <code>IMediator</code> from the <code>IView</code>.
@@ -806,7 +891,7 @@ export interface IFacade extends INotifier {
      * @return
      *        The <code>IMediator</code> that was removed from the <code>IView</code>
      */
-    removeMediator(mediatorName: string): IMediator;
+    removeMediator<V, T extends Mediator<V>>(mediatorName: string): T;
 
     /**
      * Check if a Mediator is registered or not
@@ -866,7 +951,8 @@ export interface IFacade extends INotifier {
  * and register it as an Observer for each <code>INotification</code> name returned by
  * <code>listNotificationInterests</code>.
  */
-export interface IMediator extends INotifier {
+export interface IMediator
+    extends INotifier {
     /**
      * Get the <code>IMediator</code> instance name
      *
@@ -957,7 +1043,7 @@ export interface IModel {
      * @param proxy
      *        An <code>IProxy</code> to be held by the <code>Model</code>.
      */
-    registerProxy(proxy: IProxy): void;
+    registerProxy<T extends Proxy>(proxy: T): void;
 
     /**
      * Remove an <code>IProxy</code> from the <code>Model</code>.
@@ -969,7 +1055,7 @@ export interface IModel {
      *        The <code>IProxy</code> that was removed from the <code>Model</code> or an
      *        explicit <code>null</null> if the <code>IProxy</code> didn't exist.
      */
-    removeProxy(proxyName: string): IProxy;
+    removeProxy<T extends Proxy>(proxyName: string): T;
 
     /**
      * Retrieve an <code>IProxy</code> from the <code>Model</code>.
@@ -981,7 +1067,7 @@ export interface IModel {
      *        The <code>IProxy</code> instance previously registered with the given
      *        <code>proxyName</code> or an explicit <code>null</code> if it doesn't exists.
      */
-    retrieveProxy(proxyName: string): IProxy;
+    retrieveProxy<T extends Proxy>(proxyName: string): T;
 
     /**
      * Check if a Proxy is registered
@@ -993,9 +1079,7 @@ export interface IModel {
      *        A Proxy is currently registered with the given <code>proxyName</code>.
      */
     hasProxy(proxyName: string): boolean;
-}
-
-/**
+}/**
  * The interface definition for a PureMVC notification.
  *
  * PureMVC does not rely upon underlying event models such as the one provided in JavaScript DOM API,
@@ -1067,9 +1151,7 @@ export interface INotification {
      *        The textual representation of the <code>Notification</code>    instance.
      */
     toString(): string;
-}
-
-/**
+}/**
  * The interface definition for a PureMVC <code>Notifier</code>.
  *
  * <code>MacroCommand</code>, <code>SimpleCommand</code>, <code>Mediator</code> and
@@ -1103,7 +1185,6 @@ export interface INotifier {
      */
     sendNotification(name: string, body?: any, type?: string): void;
 }
-
 /**
  * The interface definition for a PureMVC Observer.
  *
@@ -1168,7 +1249,6 @@ export interface IObserver {
      */
     compareNotifyContext(object: any): boolean;
 }
-
 /**
  * The interface definition for a PureMVC Proxy.
  *
@@ -1187,7 +1267,8 @@ export interface IObserver {
  * <LI>Encapsulate interaction with local or remote services used to fetch and persist model
  * data.
  */
-export interface IProxy extends INotifier {
+export interface IProxy
+    extends INotifier {
     /**
      * Get the name of the <code>IProxy></code> instance.
      *
@@ -1224,7 +1305,6 @@ export interface IProxy extends INotifier {
      */
     onRemove(): void;
 }
-
 /**
  * The interface definition for a PureMVC view.
  *
@@ -1297,7 +1377,7 @@ export interface IView {
      * @param mediator
      *        A reference to an <code>IMediator</code> implementation instance.
      */
-    registerMediator(mediator: IMediator): void;
+    registerMediator<V, T extends Mediator<V>>(mediator: T): void;
 
     /**
      * Retrieve an <code>IMediator</code> from the <code>View</code>.
@@ -1309,7 +1389,7 @@ export interface IView {
      *        The <code>IMediator</code> instance previously registered with the given
      *        <code>mediatorName</code> or an explicit <code>null</code> if it doesn't exists.
      */
-    retrieveMediator(mediatorName: string): IMediator;
+    retrieveMediator<V, T extends Mediator<V>>(mediatorName: string): T;
 
     /**
      * Remove an <code>IMediator</code> from the <code>View</code>.
@@ -1321,7 +1401,7 @@ export interface IView {
      *        The <code>IMediator</code> that was removed from the <code>View</code> or a
      *        strict <code>null</null> if the <code>Mediator</code> didn't exist.
      */
-    removeMediator(mediatorName: string): IMediator;
+    removeMediator<V, T extends Mediator<V>>(mediatorName: string): T;
 
     /**
      * Check if a <code>IMediator</code> is registered or not.
@@ -1334,58 +1414,6 @@ export interface IView {
      */
     hasMediator(mediatorName: string): boolean;
 }
-
-/**
- * A base <code>INotifier</code> implementation.
- *
- * <code>MacroCommand</code>, <code>SimpleCommand</code>, <code>Mediator</code> and
- * <code>Proxy</code> all have a need to send <code>Notifications</code>.
- *
- * The <code>INotifier</code> interface provides a common method called
- * <code>sendNotification</code> that relieves implementation code of the necessity to actually
- * construct <code>Notification</code>s.
- *
- * The <code>INotifier</code> interface, which all of the above mentioned classes extend,
- * provides an initialized reference to the <code>Facade</code> singleton, which is required by
- * the convenience method <code>sendNotification</code>    for sending <code>Notifications</code>,
- * but it also eases implementation as these classes have frequent <code>Facade</code>
- * interactions and usually require access to the facade anyway.
- */
-export class Notifier implements INotifier {
-    /**
-     * Local reference to the singleton <code>Facade</code>.
-     *
-     * @protected
-     */
-    facade: IFacade;
-
-    /**
-     * Constructs a <code>Notifier</code> instance.
-     */
-    constructor() {
-        this.facade = Facade.getInstance();
-    }
-
-    /**
-     * Create and send a <code>Notification</code>.
-     *
-     * Keeps us from having to construct new <code>Notification</code> instances in our
-     * implementation code.
-     *
-     * @param name
-     *        The name of the notification to send.
-     *
-     * @param body
-     *        The body of the notification.
-     *
-     * @param type
-     *        The type of the notification.
-     */
-    sendNotification(name: string, body: any = null, type: string = ""): void {
-        this.facade.sendNotification(name, body, type);
-    }
-}
-
 /**
  * A base <code>ICommand</code> implementation that executes other <code>ICommand</code>s.
  *
@@ -1401,13 +1429,13 @@ export class Notifier implements INotifier {
  * but instead, should override the <code>initializeMacroCommand</code> method, calling
  * <code>addSubCommand</code> once for each <i>SubCommand</i> to be executed.
  */
-export class MacroCommand extends Notifier implements ICommand, INotifier {
+export abstract class MacroCommand<T> extends Notifier implements ICommand, INotifier {
     /**
      * An array of <code>ICommand</code>s.
      *
      * @protected
      */
-    subCommands: Function[];
+    subCommands: Array<new () => T> = null!;
 
     /**
      * Constructs a <code>MacroCommand</code> instance.
@@ -1420,7 +1448,7 @@ export class MacroCommand extends Notifier implements ICommand, INotifier {
     constructor() {
         super();
 
-        this.subCommands = new Array<Function>();
+        this.subCommands = [];
         this.initializeMacroCommand();
     }
 
@@ -1455,7 +1483,7 @@ export class MacroCommand extends Notifier implements ICommand, INotifier {
      * @param commandClassRef
      *        A reference to the constructor of the <code>ICommand</code>.
      */
-    addSubCommand(commandClassRef: Function): void {
+    addSubCommand(commandClassRef: new () => T): void {
         this.subCommands.push(commandClassRef);
     }
 
@@ -1472,30 +1500,31 @@ export class MacroCommand extends Notifier implements ICommand, INotifier {
      * @final
      */
     execute(notification: INotification): void {
-        let subCommands: Function[] = this.subCommands.slice(0);
-        let len: number = this.subCommands.length;
+        const subCommands: Function[] = this.subCommands.slice(0);
+        const len: number = this.subCommands.length;
         for (let i: number = 0; i < len; i++) {
             /*
              * Typed any here instead of <code>Function</code> ( won't compile if set to Function
              * because today the compiler consider that <code>Function</code> is not newable and
              * doesn't have a <code>Class</code> type)
              */
-            let commandClassRef: any = subCommands[i];
-            let commandInstance: ICommand = <ICommand> /*</>*/ new commandClassRef();
+            const commandClassRef: any = subCommands[i];
+            const commandInstance: ICommand = <ICommand> /*</>*/ new commandClassRef();
             commandInstance.execute(notification);
         }
 
         this.subCommands.splice(0);
     }
 }
-
 /**
  * A base <code>ICommand</code> implementation.
  *
  * Your subclass should override the <code>execute</code> method where your business logic will
  * handle the <code>INotification</code>.
  */
-export class SimpleCommand extends Notifier implements ICommand, INotifier {
+export abstract class SimpleCommand
+    extends Notifier
+    implements ICommand, INotifier {
     /**
      * Fulfill the use-case initiated by the given <code>INotification</code>.
      *
@@ -1510,7 +1539,6 @@ export class SimpleCommand extends Notifier implements ICommand, INotifier {
 
     }
 }
-
 /**
  * A base singleton <code>IFacade</code> implementation.
  *
@@ -1529,21 +1557,31 @@ export class SimpleCommand extends Notifier implements ICommand, INotifier {
  * This <code>Facade</code> implementation is a singleton and cannot be instantiated directly,
  * but instead calls the static singleton factory method <code>Facade.getInstance()</code>.
  */
-export class Facade implements IFacade {
+export class Facade
+    implements IFacade {
+    /**
+     * @constant
+     * @protected
+     */
+    static SINGLETON_MSG: string = "Facade singleton already constructed!";
+    /**
+     * The singleton <code>Facade</code> instance.
+     *
+     * @protected
+     */
+    static instance: IFacade;
     /**
      * Local reference to the <code>Model</code> singleton.
      *
      * @protected
      */
     model: IModel = null!;
-
     /**
      * Local reference to the <code>View</code> singleton.
      *
      * @protected
      */
     view: IView = null!;
-
     /**
      * Local reference to the <code>Controller</code> singleton.
      *
@@ -1567,6 +1605,19 @@ export class Facade implements IFacade {
 
         Facade.instance = this;
         this.initializeFacade();
+    }
+
+    /**
+     * Facade singleton factory method.
+     *
+     * @return
+     *        The singleton instance of <code>Facade</code>.
+     */
+    static getInstance(): IFacade {
+        if (!Facade.instance)
+            Facade.instance = new Facade();
+
+        return Facade.instance;
     }
 
     /**
@@ -1672,8 +1723,8 @@ export class Facade implements IFacade {
      * @param commandClassRef
      *        A reference to the constructor of the <code>ICommand</code>.
      */
-    registerCommand(notificationName: string, commandClassRef: Function): void {
-        this.controller.registerCommand(notificationName, commandClassRef);
+    registerCommand<T extends SimpleCommand>(notificationName: string, commandClassRef: new () => T): void {
+        this.controller.registerCommand<T>(notificationName, commandClassRef);
     }
 
     /**
@@ -1709,8 +1760,8 @@ export class Facade implements IFacade {
      * @param proxy
      *        The <code>IProxy</code> to be registered with the <code>Model</code>.
      */
-    registerProxy(proxy: IProxy): void {
-        this.model.registerProxy(proxy);
+    registerProxy<T extends Proxy>(proxy: T): void {
+        this.model.registerProxy<T>(proxy);
     }
 
     /**
@@ -1723,7 +1774,7 @@ export class Facade implements IFacade {
      *        The <code>IProxy</code> previously registered with the given
      *        <code>proxyName</code>.
      */
-    retrieveProxy(proxyName: string): IProxy {
+    retrieveProxy(proxyName: string): Proxy {
         return this.model.retrieveProxy(proxyName);
     }
 
@@ -1736,11 +1787,12 @@ export class Facade implements IFacade {
      * @return
      *        The <code>IProxy</code> that was removed from the <code>Model</code>
      */
-    removeProxy(proxyName: string): IProxy {
-        let proxy: IProxy = null!;
+    removeProxy<T extends Proxy>(proxyName: string): T {
+        let proxy: T;
         if (this.model)
-            proxy = this.model.removeProxy(proxyName);
-        return proxy
+            proxy = this.model.removeProxy<T>(proxyName);
+
+        return proxy!;
     }
 
     /**
@@ -1763,7 +1815,7 @@ export class Facade implements IFacade {
      * @param mediator
      A reference to the <code>IMediator</code>.
      */
-    registerMediator(mediator: IMediator): void {
+    registerMediator <V, T extends Mediator<V>>(mediator: T): void {
         if (this.view)
             this.view.registerMediator(mediator);
     }
@@ -1778,7 +1830,7 @@ export class Facade implements IFacade {
      *        The <code>IMediator</code> previously registered with the given
      *        <code>mediatorName</code>.
      */
-    retrieveMediator(mediatorName: string): IMediator {
+    retrieveMediator<V, T extends Mediator<V>>(mediatorName: string): T {
         return this.view.retrieveMediator(mediatorName);
     }
 
@@ -1791,12 +1843,12 @@ export class Facade implements IFacade {
      * @return
      *        The <code>IMediator</code> that was removed from the <code>IView</code>
      */
-    removeMediator(mediatorName: string): IMediator {
-        let mediator: IMediator = null!;
+    removeMediator<V, T extends Mediator<V>>(mediatorName: string): T {
+        let mediator: T;
         if (this.view)
             mediator = this.view.removeMediator(mediatorName);
 
-        return mediator;
+        return mediator!;
     }
 
     /**
@@ -1846,57 +1898,35 @@ export class Facade implements IFacade {
      * @param type
      *        The type of the notification to send.
      */
-    sendNotification(name: string, body: any = null, type: string = ""): void {
+    sendNotification(name: string, body: any = null, type?: string): void {
         this.notifyObservers(new Notification(name, body, type));
     }
-
-    /**
-     * @constant
-     * @protected
-     */
-    static SINGLETON_MSG: string = "Facade singleton already constructed!";
-
-    /**
-     * The singleton <code>Facade</code> instance.
-     *
-     * @protected
-     */
-    static instance: IFacade;
-
-    /**
-     * Facade singleton factory method.
-     *
-     * @return
-     *        The singleton instance of <code>Facade</code>.
-     */
-    static getInstance(): IFacade {
-        if (!Facade.instance)
-            Facade.instance = new Facade();
-
-        return Facade.instance;
-    }
 }
-
 /**
  * A base <code>IMediator</code> implementation.
  *
  * Typically, a <code>Mediator</code> will be written to serve one specific control or group
  * controls and so, will not have a need to be dynamically named.
  */
-export class Mediator extends Notifier implements IMediator, INotifier {
+export abstract class Mediator<T> extends Notifier implements IMediator, INotifier {
+    /**
+     * Default name of the <code>Mediator</code>.
+     *
+     * @constant
+     */
+    static NAME: string = "Mediator";
     /**
      * The name of the <code>Mediator</code>.
      *
      * @protected
      */
-    mediatorName: string = "";
-
+    mediatorName: string = null!;
     /**
      * The <code>Mediator</code>'s view component.
      *
      * @protected
      */
-    viewComponent: any = null;
+    viewComponent: T = null;
 
     /**
      * Constructs a <code>Mediator</code> instance.
@@ -1907,10 +1937,10 @@ export class Mediator extends Notifier implements IMediator, INotifier {
      * @param viewComponent
      *        The view component handled by this <code>Mediator</code>.
      */
-    constructor(mediatorName: string = "", viewComponent: any = null) {
+    constructor(mediatorName: string = "", viewComponent: T = null) {
         super();
 
-        this.mediatorName = (mediatorName != "") ? mediatorName : Mediator.NAME;
+        this.mediatorName = (mediatorName !== "") ? mediatorName : Mediator.NAME;
         this.viewComponent = viewComponent;
     }
 
@@ -1940,7 +1970,7 @@ export class Mediator extends Notifier implements IMediator, INotifier {
      * @return
      *        The <code>Mediator</code>'s default view component.
      */
-    getViewComponent(): any {
+    getViewComponent(): T {
         return this.viewComponent;
     }
 
@@ -1950,7 +1980,7 @@ export class Mediator extends Notifier implements IMediator, INotifier {
      * @param viewComponent
      *        The default view component to set for this <code>Mediator</code>.
      */
-    setViewComponent(viewComponent: any): void {
+    setViewComponent(viewComponent: T): void {
         this.viewComponent = viewComponent;
     }
 
@@ -1994,15 +2024,7 @@ export class Mediator extends Notifier implements IMediator, INotifier {
     onRemove(): void {
 
     }
-
-    /**
-     * Default name of the <code>Mediator</code>.
-     *
-     * @constant
-     */
-    static NAME: string = 'Mediator';
 }
-
 /**
  * A base <code>INotification</code> implementation.
  *
@@ -2027,27 +2049,27 @@ export class Mediator extends Notifier implements IMediator, INotifier {
  * pattern. PureMVC classes need not be related to each other in a parent/child relationship in
  * order to communicate with one another using <code>INotification</code>s.
  */
-export class Notification implements INotification {
+export class Notification<T> implements INotification {
     /**
      * The name of the <code>Notification</code>.
      *
      * @protected
      */
-    name: string = "";
+    name: string = null!;
 
     /**
      * The body data to send with the <code>Notification</code>.
      *
      * @protected
      */
-    body: any = null;
+    body: T = null!;
 
     /**
      * The type identifier of the <code>Notification</code>.
      *
      * @protected
      */
-    type: string = "";
+    type: string = null!;
 
     /**
      * Constructs a <code>Notification</code> instance.
@@ -2061,10 +2083,10 @@ export class Notification implements INotification {
      * @param type
      *        Type identifier of the <code>Notification</code>.
      */
-    constructor(name: string, body: any = null, type: string = "") {
+    constructor(name: string, body: T = null, type?: string) {
         this.name = name;
         this.body = body;
-        this.type = type;
+        this.type = type!;
     }
 
     /**
@@ -2083,7 +2105,7 @@ export class Notification implements INotification {
      * @param body
      *        The body of the <code>Notification</code> instance.
      */
-    setBody(body: any): void {
+    setBody(body: T): void {
         this.body = body;
     }
 
@@ -2093,7 +2115,7 @@ export class Notification implements INotification {
      * @return
      *        The body object of the <code>Notification</code> instance.
      */
-    getBody(): any {
+    getBody(): T {
         return this.body;
     }
 
@@ -2131,7 +2153,6 @@ export class Notification implements INotification {
     }
 }
 
-
 /**
  * A base <code>IObserver</code> implementation.
  *
@@ -2156,7 +2177,8 @@ export class Notification implements INotification {
  * method invoked, passing in an object implementing the <code>INotification</code> interface,
  * such as a subclass of <code>Notification</code>.
  */
-export class Observer implements IObserver {
+export class Observer
+    implements IObserver {
     /**
      * The notification method of the interested object.
      * @protected
@@ -2184,16 +2206,6 @@ export class Observer implements IObserver {
     }
 
     /**
-     * Get the notification method.
-     *
-     * @return
-     *        The notification (callback) method of the interested object.
-     */
-    private getNotifyMethod(): Function {
-        return this.notify;
-    }
-
-    /**
      * Set the notification method.
      *
      * The notification method should take one parameter of type <code>INotification</code>.
@@ -2203,16 +2215,6 @@ export class Observer implements IObserver {
      */
     setNotifyMethod(notifyMethod: Function): void {
         this.notify = notifyMethod;
-    }
-
-    /**
-     * Get the notification context.
-     *
-     * @return
-     *        The notification context (<code>this</code>) of the interested object.
-     */
-    private getNotifyContext(): any {
-        return this.context;
     }
 
     /**
@@ -2248,8 +2250,27 @@ export class Observer implements IObserver {
     compareNotifyContext(object: any): boolean {
         return object === this.context;
     }
-}
 
+    /**
+     * Get the notification method.
+     *
+     * @return
+     *        The notification (callback) method of the interested object.
+     */
+    private getNotifyMethod(): Function {
+        return this.notify;
+    }
+
+    /**
+     * Get the notification context.
+     *
+     * @return
+     *        The notification context (<code>this</code>) of the interested object.
+     */
+    private getNotifyContext(): any {
+        return this.context;
+    }
+}
 /**
  * A base <code>IProxy</code> implementation.
  *
@@ -2268,14 +2289,21 @@ export class Observer implements IObserver {
  * <LI>Encapsulate interaction with local or remote services used to fetch and persist model
  * data.
  */
-export class Proxy extends Notifier implements IProxy, INotifier {
+export abstract class Proxy
+    extends Notifier
+    implements IProxy, INotifier {
+    /**
+     * The default name of the <code>Proxy</code>
+     *
+     * @constant
+     */
+    static NAME: string = "Proxy";
     /**
      * The data object controlled by the <code>Proxy</code>.
      *
      * @protected
      */
-    proxyName: string = "";
-
+    proxyName: string = null!;
     /**
      * The name of the <code>Proxy</code>.
      *
@@ -2295,7 +2323,7 @@ export class Proxy extends Notifier implements IProxy, INotifier {
     constructor(proxyName: string = "", data: any = null) {
         super();
 
-        this.proxyName = (proxyName != "") ? proxyName : Proxy.NAME;
+        this.proxyName = (proxyName !== "") ? proxyName : Proxy.NAME;
 
         if (data != null)
             this.setData(data);
@@ -2346,14 +2374,4 @@ export class Proxy extends Notifier implements IProxy, INotifier {
     onRemove(): void {
 
     }
-
-    /**
-     * The default name of the <code>Proxy</code>
-     *
-     * @type
-     * @constant
-     */
-    static NAME: string = "Proxy";
 }
-
-

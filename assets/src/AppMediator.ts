@@ -7,12 +7,11 @@ import {MsgConst} from "./config/MsgConst";
 import BaseMediator from "./base/BaseMediator";
 import {INotification} from "../lib/puremvc";
 
-const {ccclass, menu} = _decorator;
+const {ccclass} = _decorator;
 @ccclass("AppMediator")
 export default class AppMediator extends BaseMediator {
     constructor(node?: Node) {
         super(node);
-        AppMediator.NAME = this.mediatorName;
     }
 
     public onRegister(): void {

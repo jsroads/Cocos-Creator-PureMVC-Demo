@@ -5,9 +5,9 @@
 import ControllerCmd from "./ControllerCmd";
 import ModelPrepCmd from "./ModelPrepCmd";
 import ViewPrepCmd from "./ViewPrepCmd";
-import {MacroCommand} from "../../lib/puremvc";
+import {MacroCommand, SimpleCommand} from "../../lib/puremvc";
 
-export default class StartupCmd extends MacroCommand {
+export default class StartupCmd extends MacroCommand<SimpleCommand> {
     constructor() {
         super();
     }

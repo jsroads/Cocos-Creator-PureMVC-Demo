@@ -6,13 +6,13 @@ import {_decorator, Node} from 'cc';
 import BaseMediator from "../base/BaseMediator";
 import {MsgConst} from "../config/MsgConst";
 import {INotification} from "../../lib/puremvc";
+import {LoadScene} from "db://assets/src/com/LoadScene";
 
 const {ccclass, menu} = _decorator;
 @ccclass("LoadSceneMediator")
 export default class LoadSceneMediator extends BaseMediator {
     constructor(node?: Node) {
         super(node);
-        LoadSceneMediator.NAME = this.mediatorName;
     }
 
     public onRegister(): void {
@@ -28,7 +28,7 @@ export default class LoadSceneMediator extends BaseMediator {
     public handleNotification(message: INotification): void {
         switch (message.getName()) {
             case MsgConst.LOGIN_SUCCESS:
-                let component = this.viewComponent.getComponent("LoadScene")
+                let component = this.getComponent<LoadScene>("LoadScene")
                 component.loadMainScene();
                 break;
             default:

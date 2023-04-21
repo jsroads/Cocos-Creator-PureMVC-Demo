@@ -6,7 +6,7 @@ import {_decorator} from 'cc';
 import BaseProxy from "./BaseProxy";
 import {MsgConst} from "../config/MsgConst";
 
-const {ccclass, menu} = _decorator;
+const {ccclass} = _decorator;
 @ccclass("LoginProxy")
 export default class LoginProxy extends BaseProxy {
     constructor(data?: any) {

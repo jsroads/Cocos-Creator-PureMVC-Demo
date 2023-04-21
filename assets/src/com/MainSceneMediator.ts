@@ -6,12 +6,11 @@ import {_decorator, Node} from 'cc';
 import BaseMediator from "../base/BaseMediator";
 import {INotification} from "../../lib/puremvc";
 
-const {ccclass, menu} = _decorator;
+const {ccclass} = _decorator;
 @ccclass("MainSceneMediator")
 export default class MainSceneMediator extends BaseMediator {
-    constructor(node?: Node) {
-        super(node);
-        MainSceneMediator.NAME = this.mediatorName;
+    constructor(viewComponent?: Node) {
+        super(viewComponent);
     }
 
     public onRegister(): void {

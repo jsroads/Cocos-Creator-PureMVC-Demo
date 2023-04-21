@@ -29,7 +29,7 @@
 
 import {_decorator, Component, game, Node, input, Input, KeyCode} from "cc";
 import {AppFacade} from "./core/AppFacade";
-import {IMediator, IProxy} from "../lib/puremvc";
+import {Mediator, Proxy} from "../lib/puremvc";
 import Browser from "./Browser";
 
 const {ccclass, disallowMultiple, menu, executionOrder} = _decorator;
@@ -38,21 +38,21 @@ const {ccclass, disallowMultiple, menu, executionOrder} = _decorator;
 @menu('常住节点组件/AppNode')
 @executionOrder(-10000)
 export default class AppNode extends Component {
-    public static registerProxy(proxy: IProxy): void {
+    public static registerProxy<T extends Proxy>(proxy: Proxy): void {
         AppFacade.getInstance().registerProxy(proxy);
     }
 
-    public static retrieveProxy(name: string, data?: any): IProxy {
+    public static retrieveProxy<T extends Proxy>(name: string, data?: any): Proxy {
         let proxy = AppFacade.getInstance().retrieveProxy(name);
         data && proxy.setData(data);
         return proxy;
     }
 
-    public static removeProxy(name: string): IProxy {
+    public static removeProxy(name: string): Proxy {
         return AppFacade.getInstance().removeProxy(name);
     }
 
-    public static registerMediator(mediator: IMediator, node?: Node): void {
+    public static registerMediator<V, T extends Mediator<V>>(mediator: T, node:V): void {
         let name = mediator.getMediatorName();
         if (AppFacade.getInstance().hasMediator(name)) {
             console.error(`Mediator ${mediator.getMediatorName()} 已经注册`);
@@ -62,16 +62,16 @@ export default class AppNode extends Component {
         node && mediator && mediator.setViewComponent(node);
     }
 
-    public static retrieveMediator(name: string, node?: Node): IMediator {
+    public static retrieveMediator<V, T extends Mediator<V>>(name: string,node:V): T {
         if (!AppFacade.getInstance().hasMediator(name)) {
             console.error(`Mediator ${name} 未注册`);
         }
-        let mediator = AppFacade.getInstance().retrieveMediator(name);
+        let mediator = AppFacade.getInstance().retrieveMediator<V, T>(name);
         node && mediator && mediator.setViewComponent(node);
         return mediator;
     }
 
-    public static removeMediator(name: string): IMediator {
+    public static removeMediator<V, T extends Mediator<V>>(name: string): T {
         if (!AppFacade.getInstance().hasMediator(name)) {
             console.error(`Mediator ${name} 未注册`);
         }

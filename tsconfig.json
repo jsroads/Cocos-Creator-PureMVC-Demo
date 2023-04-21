@@ -5,5 +5,8 @@
   /* Add your custom configuration here. */
   "compilerOptions": {
     "strict": false
-  }
+  },
+  "exclude": [
+    "C:/ProgramData/cocos/editors/Creator/3.7.2/resources/resources/3d/@types/**/*.d.ts"
+  ]
 }
