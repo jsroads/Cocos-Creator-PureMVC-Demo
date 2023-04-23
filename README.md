@@ -929,4 +929,5 @@ QQ群 532454212
 
 - [puremvc 中文手册](https://puremvc.org/docs/PureMVC_IIBP_Chinese.pdf)
 - [puremvc TS版本怎么放入到creator里,一直提示puremvc is not defined](https://forum.cocos.org/t/puremvc-ts-creator-puremvc-is-not-defined/56731)
+- https://github.com/jesseincn/ts-puremvc
 
