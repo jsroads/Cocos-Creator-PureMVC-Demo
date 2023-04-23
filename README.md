@@ -920,6 +920,11 @@ puremvc框架 初始化完毕
 
 上面就是关于PureMVC 如何在Cocos Creator里面使用，为了简单我省去了很多业务逻辑的干扰，和网络数据的传输逻辑。
 
+联系方式
+
+QQ群 532454212
+
+
 ### 参考链接
 
 - [puremvc 中文手册](https://puremvc.org/docs/PureMVC_IIBP_Chinese.pdf)
