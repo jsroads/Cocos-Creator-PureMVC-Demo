@@ -5,6 +5,7 @@
 
 import {Component} from "cc";
 import {IBaseUI} from "../data/Inters";
+
 export default abstract class BaseUI extends Component implements IBaseUI {
     protected info: any;
     protected cache: any = {};

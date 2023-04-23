@@ -1,4 +1,4 @@
-import {js} from 'cc';
+import {js} from "cc";
 import BaseView from "./BaseView";
 
 export class BaseScene extends BaseView {

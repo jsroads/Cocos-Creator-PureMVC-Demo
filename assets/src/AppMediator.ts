@@ -2,17 +2,15 @@
  * Created by jsroads on 2020/6/11.2:42 下午
  * Note:
  */
-import {_decorator, Node} from 'cc';
+import {_decorator} from "cc";
 import {MsgConst} from "./config/MsgConst";
 import BaseMediator from "./base/BaseMediator";
 import {INotification} from "../lib/puremvc";
+import AppNode from "db://assets/src/AppNode";
 
 const {ccclass} = _decorator;
 @ccclass("AppMediator")
-export default class AppMediator extends BaseMediator {
-    constructor(node?: Node) {
-        super(node);
-    }
+export default class AppMediator extends BaseMediator<AppNode> {
 
     public onRegister(): void {
         console.log("puremvc 初始化完毕");

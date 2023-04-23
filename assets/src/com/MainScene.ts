@@ -2,7 +2,7 @@
  * Created by jsroads on 2021/4/26.8:35 下午
  * Note:
  */
-import {_decorator} from 'cc';
+import {_decorator} from "cc";
 import {BaseScene} from "../base/BaseScene";
 
 const {ccclass, property} = _decorator;

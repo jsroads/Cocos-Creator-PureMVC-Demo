@@ -2,7 +2,7 @@
  * Created by jsroads on 2021/3/2.2:36 下午
  * Note:
  */
-import {director, Size, sys, view} from "cc";
+import {Size, sys, view} from "cc";
 
 const MINI_GAMES_LIST = [sys.Platform.WECHAT_GAME, sys.Platform.BYTEDANCE_MINI_GAME,
     sys.Platform.VIVO_MINI_GAME, sys.Platform.OPPO_MINI_GAME, sys.Platform.BAIDU_MINI_GAME];

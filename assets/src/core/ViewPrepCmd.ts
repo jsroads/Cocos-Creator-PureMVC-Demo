@@ -4,6 +4,7 @@
  */
 import AppMediator from "../AppMediator";
 import {INotification, SimpleCommand} from "../../lib/puremvc";
+import AppNode from "db://assets/src/AppNode";
 
 export default class ViewPrepCmd extends SimpleCommand {
     public constructor() {
@@ -12,6 +13,6 @@ export default class ViewPrepCmd extends SimpleCommand {
 
     public execute(message: INotification): void {
         //游戏主舞台
-        this.facade.registerMediator(new AppMediator(message.getBody()));
+        this.facade.registerMediator(new AppMediator(<AppNode>message.getBody()));
     }
 }

@@ -25,6 +25,7 @@
 import {MsgConst} from "../config/MsgConst";
 import {Facade, IFacade} from "../../lib/puremvc";
 import StartupCmd from "./StartupCmd";
+import {Component} from "cc";
 
 
 /**
@@ -62,7 +63,7 @@ export class AppFacade extends Facade implements IFacade {
      * 启动PureMVC，在应用程序中调用此方法，并传递应用程序本身的引用
      * @param stage    -    PureMVC应用程序的根视图 root，包含其它所有的View Componet
      */
-    public startup(stage?: any): void {
+    public startup<T extends Component>(stage?: T): void {
         this.sendNotification(MsgConst.START_UP, stage);
         this.removeCommand(MsgConst.START_UP);//PureMVC初始化完成，注销STARUP命令
     }

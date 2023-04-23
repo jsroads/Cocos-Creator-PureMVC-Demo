@@ -2,7 +2,7 @@
  * Created by jsroads on 2021/4/26.8:35 下午
  * Note:
  */
-import {_decorator, Node} from 'cc';
+import {_decorator} from "cc";
 import BaseMediator from "../base/BaseMediator";
 import {MsgConst} from "../config/MsgConst";
 import {INotification} from "../../lib/puremvc";
@@ -10,11 +10,7 @@ import {LoadScene} from "db://assets/src/com/LoadScene";
 
 const {ccclass, menu} = _decorator;
 @ccclass("LoadSceneMediator")
-export default class LoadSceneMediator extends BaseMediator {
-    constructor(node?: Node) {
-        super(node);
-    }
-
+export default class LoadSceneMediator extends BaseMediator<LoadScene> {
     public onRegister(): void {
         console.log("LoadSceneMediator 初始化完毕");
     }
@@ -28,8 +24,8 @@ export default class LoadSceneMediator extends BaseMediator {
     public handleNotification(message: INotification): void {
         switch (message.getName()) {
             case MsgConst.LOGIN_SUCCESS:
-                let component = this.getComponent<LoadScene>("LoadScene")
-                component.loadMainScene();
+                // let component = this.getComponent<LoadScene>("LoadScene")
+                this.viewComponent.loadMainScene();
                 break;
             default:
         }
@@ -40,11 +36,11 @@ export default class LoadSceneMediator extends BaseMediator {
     }
 
     protected lazyEventListener(): void {
-        this.viewComponent.once("init_game", (data: any) => {
+        this.entity.once("init_game", (data: any) => {
             console.log("开始准备其他的数据：" + data)
             this.sendNotification(MsgConst.LOADSCENE_START_COMPLETE)
         })
-        this.viewComponent.once("login_game", (data: any) => {
+        this.entity.once("login_game", (data: any) => {
             console.log("登陆数据：" + data);
             this.sendNotification(MsgConst.LOGIN_CMD,data)
         })

@@ -2,16 +2,14 @@
  * Created by jsroads on 2021/4/26.8:35 下午
  * Note:
  */
-import {_decorator, Node} from 'cc';
+import {_decorator} from "cc";
 import BaseMediator from "../base/BaseMediator";
 import {INotification} from "../../lib/puremvc";
+import {MainScene} from "db://assets/src/com/MainScene";
 
 const {ccclass} = _decorator;
 @ccclass("MainSceneMediator")
-export default class MainSceneMediator extends BaseMediator {
-    constructor(viewComponent?: Node) {
-        super(viewComponent);
-    }
+export default class MainSceneMediator extends BaseMediator<MainScene> {
 
     public onRegister(): void {
         console.log("MainSceneMediator 初始化完毕");

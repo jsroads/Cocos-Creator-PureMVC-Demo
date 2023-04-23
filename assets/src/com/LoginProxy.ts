@@ -2,7 +2,7 @@
  * Created by jsroads on 2020/6/11.3:00 下午
  * Note:
  */
-import {_decorator} from 'cc';
+import {_decorator} from "cc";
 import BaseProxy from "./BaseProxy";
 import {MsgConst} from "../config/MsgConst";
 
